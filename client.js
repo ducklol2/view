@@ -1,39 +1,37 @@
-const h = document.querySelector('h1');
-const svg = document.querySelector('svg');
-
-svg.ondrop = event => {
+document.onpaste = event => {
   event.preventDefault();
-  console.log(event);
-
-  [...event.dataTransfer.items].forEach(item => {
-    if (item.kind != "file") return;
-
-    const previousImageElSvg = document.querySelector('image');
-    if (previousImageElSvg) previousImageElSvg.remove();
-    display(item.getAsFile());
-    document.querySelector('#info').style.display = 'none';
-  });
+  handle(event.clipboardData.items[0]);
 };
+
+const svg = document.querySelector('svg');
+// Prevents Chrome opening item in new tab?
+document.ondragover = event => event.preventDefault();
+
+document.ondrop = event => {
+  event.preventDefault();
+  handle(event.dataTransfer.items[0]);
+};
+    
+function handle(data) {
+  if (data.kind != "file") return;
+
+  const previousImageElSvg = document.querySelector('image');
+  if (previousImageElSvg) previousImageElSvg.remove();
+  display(data.getAsFile());
+  document.querySelector('#info').style.display = 'none';
+}
 
 function display(file) {
   const imageEl = new Image();
   imageEl.src = URL.createObjectURL(file);
   imageEl.onload = event => {
-    console.log('load:', event);
     const imageElSvg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
     imageElSvg.setAttribute('href', URL.createObjectURL(file));
-    // svg.setAttribute('width', event.target.width);
-    // svg.setAttribute('height', event.target.height);
     svg.setAttribute('viewBox', `0 0 ${event.target.width} ${event.target.height}`);
     svg.appendChild(imageElSvg);
   };
 }
 
-svg.ondragover = event => {
-  event.preventDefault();
-  // console.log('dragover', event);
-  // debugger;
-};
 
 window.addEventListener('wheel', event => {
   event.preventDefault();
@@ -57,13 +55,6 @@ svg.onmousemove = event => {
   lastX = event.x;
   lastY = event.y;
 };
-
-// svg.onmouseup = event => {
-//   console.log('up', event);
-// };
-// svg.onmouseleave = event => {
-//   console.log('leave', event);
-// };
 
 svg.setAttribute('width', window.visualViewport.width);
 svg.setAttribute('height', window.visualViewport.height);
